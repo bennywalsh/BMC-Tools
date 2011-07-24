@@ -7,13 +7,14 @@ import time
 
 if __name__ == '__main__':
 
-	proc = subprocess.Popen(['.' + os.sep + 'bmc.py', 'bitcoin-history', '10000'],stdout=subprocess.PIPE,)
+	proc = subprocess.Popen(['.' + os.sep + 'bmc.py', 'bitcoin-history', '999999'],stdout=subprocess.PIPE,)
 	stdout_value = proc.communicate()[0]
+	stdout_value = stdout_value.replace('dividend_by --:-- ', '')
+	stdout_value = stdout_value.replace('transaction --:-- ', '')
 	stdout_value = stdout_value.replace('timestamp --:-- ', '')
 	stdout_value = stdout_value.replace('amount --:-- ', '')
-	stdout_value = stdout_value.replace('transaction --:-- ', '')
-	stdout_value = stdout_value.replace('type --:-- ', '')
 	stdout_value = stdout_value.replace('address --:-- ', '')
+	stdout_value = stdout_value.replace('type --:-- ', '')
 	stdout_value = stdout_value.replace('\n', ';')
 	#stdout_value = stdout_value.replace(' ', '\n')
 	records = re.split(' ', stdout_value)
@@ -24,17 +25,19 @@ if __name__ == '__main__':
 		items[:] = [x for x in items if x != '']
 		proper_records.append(items)
 
-	del proper_records[0]
+	del proper_records[0]     # Delete the first completely empty record
 
-	def blah(tup):
-		return tup[0]
+	def blah(tup):            # Sort by timestamp
+		return tup[2]
 	
 	proper_records.sort(key=blah)
 
-	print 'Time,Amount,Transaction,Type,Address'
+	print 'Dividend By,Transaction,Time,Amount,Address,Type'     # Heading
 
 	for proper_record in proper_records:
-		proper_record[0] = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(int(proper_record[0])))
+
+		# Convert to human readable date format - UK format because that is the logical way ;O)
+		proper_record[2] = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(int(proper_record[2])))
 		print ','.join(proper_record)
 
 
